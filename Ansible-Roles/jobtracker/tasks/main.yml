@@ -77,4 +77,4 @@
 
 - name: Hadoop MAPRED JobTracker Success Message
   debug:
-    var: "Hadoop MAPRED JobTracker Configured Successfully.......!!"
+    msg: "Hadoop MAPRED JobTracker Configured Successfully.......!!"
