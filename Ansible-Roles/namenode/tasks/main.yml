@@ -1,0 +1,96 @@
+---
+# tasks file for namenode
+
+- name: Hadoop HDFS NameNode
+  debug:
+    msg: "Hadoop HDFS NameNode Configuration"
+
+- name: Download Java Software
+  get_url:
+    url: https://mirrors.huaweicloud.com/java/jdk/8u171-b11/jdk-8u171-linux-x64.rpm
+    dest: /root/java.rpm
+  changed_when: false
+  register: x
+
+- debug:
+    var: x.msg
+
+- name: Download Hadoop Software
+  get_url:
+    url: https://archive.apache.org/dist/hadoop/core/hadoop-1.2.1/hadoop-1.2.1-1.x86_64.rpm
+    dest: /root/hadoop.rpm
+  changed_when: false
+  register: y
+
+- debug:
+    var: y.msg
+
+- name: Installing Java Software
+  command: "rpm -ivh /root/java.rpm"
+  register: java
+  changed_when: false
+  
+- debug:
+    var: java.stdout
+
+- name: Installing Hadoop Software
+  command: "rpm -ivh /root/hadoop.rpm --force"
+  register: hadoop
+  changed_when: false
+  when: java.rc == 0
+ 
+- debug:
+    var: hadoop.stdout
+
+- name: Creating Name Node Directory
+  file:
+    path: "{{ namenode_dir }}"
+    state: directory
+
+- name: Configuring hdfs-site.xml
+  blockinfile:
+    path: /etc/hadoop/hdfs-site.xml
+    insertafter: "<configuration>"
+    block:
+       <property>
+       <name>dfs.name.dir</name>
+       <value>{{ namenode_dir }}</value>
+       </property>
+    
+- name: Configuring core-site.xml file
+  blockinfile:
+    path: /etc/hadoop/core-site.xml
+    insertafter: "<configuration>"
+    block:
+       <property>
+       <name>fs.default.name</name>
+       <value>hdfs://0.0.0.0:9001</value>
+       </property>
+
+- name: Formatting Name Node Directory
+  shell: "echo Y | hadoop namenode -format"
+  register: format
+    
+- debug:
+    var: format
+
+- name: Starting hadoop Name Node services
+  shell: "hadoop-daemon.sh start namenode"
+  register: service
+    
+- debug:
+    var: service
+
+- name: Checking status of Name Node Services
+  shell: "jps"
+  register: jps
+    
+- debug:
+    var: jps.stdout_lines
+
+- name: Setting up NameNode Services Permanent
+  shell: "echo -e hadoop-daemon.sh start namenode >> /etc/rc.local"
+
+- name: Hadoop HDFS Namenode Success Message
+  debug:
+    msg: "Hadoop HDFS NameNode Configured Succesfully....!!"

@@ -1,0 +1,67 @@
+---
+# tasks file for client
+
+- name: Hadoop Cluster Client
+  debug:
+    msg: "Hadoop Cluster Client Configuration"
+
+
+- name: Download Java Software
+  get_url:
+    url: https://mirrors.huaweicloud.com/java/jdk/8u171-b11/jdk-8u171-linux-x64.rpm
+    dest: /root/java.rpm
+  changed_when: false
+  register: x
+
+- debug:
+    var: x.msg
+
+- name: Download Hadoop Software
+  get_url:
+    url: https://archive.apache.org/dist/hadoop/core/hadoop-1.2.1/hadoop-1.2.1-1.x86_64.rpm
+    dest: /root/hadoop.rpm
+  changed_when: false
+  register: y
+
+- debug:
+    var: y.msg
+
+- name: Installing Java Software
+  command: "rpm -ivh /root/java.rpm"
+  register: java
+    
+- debug:
+    var: java.stdout
+
+- name: Installing Hadoop Software
+  command: "rpm -ivh /root/hadoop.rpm --force"
+  register: hadoop
+  when: java.rc == 0
+    
+- debug:
+    var: hadoop.stdout
+
+- name: Configuring mapred-site.xml
+  blockinfile:
+    path: /etc/hadoop/mapred-site.xml
+    insertafter: "<configuration>"
+    block:
+       <property>
+       <name>mapred.job.tracker</name>
+       <value>hdfs://{{ hostvars[groups['jobtracker'][0]]['ansible_default_ipv4']['address'] }}:9001</value>
+       </property>
+
+- name: Configuring core-site.xml
+  blockinfile:
+    path: /etc/hadoop/core-site.xml
+    insertafter: "<configuration>"
+    block:
+       <property>
+       <name>fs.default.name</name>
+       <value>hdfs://{{ hostvars[groups['namenode'][0]]['ansible_default_ipv4']['address'] }}:9001</value>
+       </property>
+
+- name: Hadoop Client Success Message
+  debug:
+    msg: "Hadoop Client Configured Successfully ............!!"
+
