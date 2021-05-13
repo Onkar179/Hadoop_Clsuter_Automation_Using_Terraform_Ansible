@@ -89,4 +89,4 @@
 
 - name: Hadoop HDFS DataNode Success Message
   debug:
-    var: "Hadoop HDFS DataNode Configured Successfully...!!"
+    msg: "Hadoop HDFS DataNode Configured Successfully...!!"
