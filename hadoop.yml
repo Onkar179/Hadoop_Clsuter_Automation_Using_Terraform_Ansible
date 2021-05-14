@@ -1,0 +1,17 @@
+- hosts: namenode
+  tasks:
+    - command: date
+      register: z
+    - debug:
+        var: z
+
+- hosts: jobtracker
+  tasks:
+    - command: date
+      register: p
+    - debug:
+        var: p
+
+- hosts: client
+  roles:
+  - role: /root/hadoop-ws/client
